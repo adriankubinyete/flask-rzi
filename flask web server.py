@@ -17,6 +17,7 @@ def mytest():
 
 @app.route("/stop", methods=['GET', 'POST', 'PUT'])
 def stop():
+    render_template('index.html')
     return "<p>Whoops.</p>"
 
 if __name__ == "__main__":

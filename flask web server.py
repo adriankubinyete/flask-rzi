@@ -1,6 +1,31 @@
 from flask import Flask, request, render_template
 import json
 from flask import jsonify
+import time
+import paramiko
+
+def sshcommit(comando):
+    print(f'> "{comando}"...')
+    stdin, stdout, stderr = client.exec_command(comando, get_pty=True)
+    resultpmk = stdout.read().decode('utf-8')
+    erro = 'Erro!'
+    if stdout.channel.recv_exit_status() == 0:
+        print(f'RETURN: ' + str(stdout.channel.recv_exit_status()))
+    else:
+        print(f'RETURN: ' + str(stdout.channel.recv_exit_status()))
+    if "Permission denied" in resultpmk:
+        print('PERMISSION DENIED!')
+        print(f'{resultpmk}')
+        stdin.close()
+        stdout.close()
+        stderr.close()
+        return erro
+    else:
+        stdin.close()
+        stdout.close()
+        stderr.close()
+        return resultpmk
+
 
 app = Flask(__name__)
 
@@ -8,39 +33,64 @@ app = Flask(__name__)
 def main():
     return """<p>TESTE</p>"""
 
+@app.route("/erro")
+def erro():
+    return """<p>pagina de erro</p>"""
+
 @app.route("/mytest", methods=['GET', 'POST', 'PUT'])
 def mytest():
     
     if request.method =='POST': # se o método for POST, vou tratar os valores recebidos e exibir a página de resultado para POST
+        
+        key = "C:\\Users\\Operação 16\\.ssh\\id_rsa.pub"
+        
+        zabbix_server_ip = request.form['zabbix_ip']
+        zabbix_host_name = request.form['zabbix_host_name']
+        host_ip = request.form['host_ip']
+        host_port = request.form['host_port']
+        host_user = request.form['host_user']
+        host_pass = request.form['host_pass']
+        #print(f"""
+#{zabbix_server_ip}
+#{zabbix_host_name}
+#{host_ip}
+#{host_port}
+#{host_user}
+#{host_pass}""")
 
-        request_data = request.get_json(force=True)
-        zhn = request_data['zhn']
-        print(request_data['zhn'])
-        ip = request_data['ip']
-        porta = request_data['porta']
-        usuario = request_data['usuario']
-        senha = request_data['senha']
+        # Abrindo o processo SSH PARAMIKO
+        client = paramiko.client.SSHClient()
+        # Aceitando/adicionando a KEY
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-#        zhn = request.form.get('zhn')
-#        ip = request.form.get('ip')
-#        porta = request.form.get('porta')
-#        usuario = request.form.get('usuario')
-#        senha = request.form.get('senha')
+        try:
+            print('\n-- CONEXÃO PARAMIKO (SSH) --')
+            client.connect(host_ip, username=host_user, password=host_pass, port=host_port, key_filename=key)
+        except Exception as e:
+            client.close()
+            print(f"falha ao se conectar...")
+            print(e)
+            return '''<script>window.location.assign("/erro")</script>
+'''
+        else:
+            print("conectado")
+
         return f'''
-                  <h1>valor de zhn: {zhn}</h1>
-                  <h1>valor de ip: {ip}</h1>
-                  <h1>valor de porta: {porta}</h1>
-                  <h1>valor de usuario: {usuario}</h1>
-                  <h1>valor de senha: {senha}</h1>'''
+                  <h1>valor de zhn: {zabbix_host_name}</h1>
+                  <h1>valor de ip: {host_ip}</h1>
+                  <h1>valor de porta: {host_port}</h1>
+                  <h1>valor de usuario: {host_user}</h1>
+                  <h1>valor de senha: {host_pass}</h1>'''
 
     # o método NÃO É POST, então vou tratar com este outro html
     return '''
 <form method="POST">
-    <div><label>ZHN: <input type="text" name="zhn"></label></div>
-    <div><label>IP: <input type="text" name="ip"></label></div>
-    <div><label>PORTA: <input type="text" name="porta"></label></div>
-    <div><label>USUÁRIO: <input type="text" name="usuario"></label></div>
-    <div><label>SENHA: <input type="text" name="senha"></label></div>
+    <div><label>Zabbix IP: <input type="text" name="zabbix_ip" required></label></div>
+    <div><label>HostName: <input type="text" name="zabbix_host_name" required></label></div>
+    <div><label>IP: <input type="text" name="host_ip" required></label></div>
+    <div><label>PORTA: <input type="text" name="host_port" required></label></div>
+    <div><label>USUÁRIO: <input type="text" name="host_user" required></label></div>
+    <div><label>SENHA: <input type="text" name="host_pass" required></label></div>
     <input type="submit" value="Submit">
 </form>'''
 

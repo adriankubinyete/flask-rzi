@@ -1,0 +1,158 @@
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        color: #222;
+    }
+
+    form {
+        min-width: 600px;
+        margin: 0 auto;
+    }
+
+    form label {
+        display: flex;
+        flex-direction: column;
+    }
+
+    form label input {
+        border: 1px solid #ccc;
+        padding: 5px;
+        border-radius: 0.375rem;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .input_senha,
+    .input_chave {
+        display: none;
+    }
+
+    .show {
+        display: flex;
+    }
+
+    .container-btn {
+        max-height: 50px;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+    }
+
+    .container-btn input {
+        height: 100%;
+        flex: 1;
+        padding: 5px 10px;
+        background-color: transparent;
+        border: 1px solid #ddd;
+        border-radius: 0.375rem;
+        color: #222;
+    }
+
+    .container-btn input:hover {
+        background-color: rgba(22, 22, 22, .5);
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .container-btn input:disabled {
+        background-color: #ccc;
+        color: rgba(22, 22, 22, .4);
+        cursor: not-allowed;
+    }
+
+    .container-btn input:disabled:hover {
+        color: rgba(22, 22, 22, .4);
+    }
+
+    .container-btn input:nth-child(3) {
+        flex: 2;
+    }
+</style>
+<form method="POST" action="/">
+    <label>Zabbix/IP (server)
+        <input type="text" name="zabbix_ip" required />
+    </label>
+    <label>
+        Zabbix/Hostname <input type="text" name="zabbix_host_name" required />
+    </label>
+    <label>Host/IP
+        <input type="text" name="host_ip" required />
+    </label>
+    <label>Host/Porta (default 22)
+        <input type="text" name="host_port" />
+    </label>
+    <label>Host/Usuário
+        <input type="text" name="host_user" required />
+    </label>
+    <label class="input_senha">Host/Senha <input type="text" name="host_pass" required /></label>
+    <label class="input_chave"> Host/Chave <input type="text" name="host_key" required /></label>
+
+    <div class="container-btn">
+        <input type="button" class="btn_senha" value="Auth por senha" />
+        <input type="button" class="btn_chave" value="Auth por chave" />
+
+        <input type="submit" class="btn_instalar"value="Instalar" autofocus disabled />
+    </div>
+</form>
+
+<script>
+    const input_senha = document.querySelector(".input_senha")
+    const input_chave = document.querySelector(".input_chave")
+
+    const btn_senha = document.querySelector(".btn_senha")
+    const btn_chave = document.querySelector(".btn_chave")
+    let btn_instalar = document.querySelector(".btn_instalar")
+
+    btn_senha.addEventListener("click", (e) => {
+        e.preventDefault()
+
+        input_chave.classList.add("hide")
+        input_chave.classList.remove("show")
+        input_senha.classList.toggle("show")
+        input_chave.value=""    
+        
+        btn_senha.classList.toggle("true123")
+        if(btn_senha.classList.contains("true123")){
+            btn_instalar.removeAttribute("disabled")
+            btn_chave.setAttribute("disabled", true)
+            btn_chave.removeAttribute("required")
+        }else{
+            btn_instalar.setAttribute("disabled",true)
+            btn_chave.removeAttribute("disabled")
+            btn_chave.setAttribute()
+        }
+        
+    })
+
+    btn_chave.addEventListener("click", (e) => {
+        e.preventDefault()
+        input_senha.classList.add("hide")
+        input_senha.classList.remove("show")
+        input_chave.classList.toggle("show")
+        btn_instalar.removeAttribute("disabled")
+        input_senha.value=""
+
+        btn_chave.classList.toggle("true123")
+        if(btn_chave.classList.contains("true123")){
+            btn_instalar.removeAttribute("disabled")
+            btn_senha.setAttribute("disabled", true)
+        }else{
+            btn_instalar.setAttribute("disabled",true)
+            btn_senha.removeAttribute("disabled")
+        }
+
+    })
+</script>

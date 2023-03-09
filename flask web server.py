@@ -4,6 +4,52 @@ from flask import jsonify
 import time
 import paramiko
 
+
+# test 1 = testa se arg1 está vazio, aceita label.
+def test1(testvar, label=""):
+    def logictest(var):
+        if var == "":
+            return True
+        else:
+            return False
+    
+    if label: # quer retorno
+        if logictest(testvar):
+            return print(f"[{label}] Sem conteúdo.")
+        else:
+            return print(f"[{label}] Há conteúdo. ({testvar})")
+    else:
+        return logictest(testvar)
+        
+# test 2 = testa se arg1 é igual a arg2, aceita label
+def test2(testvar, comparator, label=""):
+    def logictest(var):
+        if var == comparator:
+            return True
+        else:
+            return False
+    
+    if label: # quer retorno
+        if logictest(testvar):
+            return print(f"[{label}] Igual.")
+        else:
+            return print(f"[{label}] Diferente.")
+    else:
+        return logictest(testvar)
+
+# Para redirecionar à outro path da URL
+def redirectTo(path, *args, **kwargs):
+    try: 
+        msg=kwargs['mensagem']
+    except KeyError:
+        pass # Não importa se passar a mensagem ou não.
+    finally:
+        print("deu certo")
+    
+    print(f"args: {args}")
+    print(f"kwargs: {kwargs}")
+    return f'<script>window.location.assign("{path}")</script>'
+
 def sshcommit(comando):
     print(f'> "{comando}"...')
     stdin, stdout, stderr = client.exec_command(comando, get_pty=True)
@@ -35,28 +81,29 @@ def main():
 
 @app.route("/erro")
 def erro():
-    return """<p>pagina de erro</p>"""
+    return render_template("erro.html")
 
-@app.route("/mytest", methods=['GET', 'POST', 'PUT'])
+@app.route("/zbx", methods=['GET', 'POST'])
 def mytest():
     
     if request.method =='POST': # se o método for POST, vou tratar os valores recebidos e exibir a página de resultado para POST
         
         key = "C:\\Users\\Operação 16\\.ssh\\id_rsa.pub"
-        
+                   
         zabbix_server_ip = request.form['zabbix_ip']
-        zabbix_host_name = request.form['zabbix_host_name']
+        zabbix_hostname = request.form['zabbix_host_name']
         host_ip = request.form['host_ip']
-        host_port = request.form['host_port']
+        host_port = 22 if request.form['host_port'] == '' else request.form['host_port']
         host_user = request.form['host_user']
         host_pass = request.form['host_pass']
-        #print(f"""
-#{zabbix_server_ip}
-#{zabbix_host_name}
-#{host_ip}
-#{host_port}
-#{host_user}
-#{host_pass}""")
+        host_key = request.form['host_key']
+        test1(zabbix_server_ip, "z-ip")
+        test1(zabbix_hostname, "hostname")
+        test1(host_ip, "h-ip")
+        test1(host_port, "port")
+        test1(host_user, "user")
+        test1(host_pass, "pass")
+        test1(host_key, "key")
 
         # Abrindo o processo SSH PARAMIKO
         client = paramiko.client.SSHClient()
@@ -70,43 +117,21 @@ def mytest():
             client.close()
             print(f"falha ao se conectar...")
             print(e)
-            return '''<script>window.location.assign("/erro")</script>
-'''
+            return redirectTo("/erro", _type="ssh", _erro=e)
         else:
-            print("conectado")
-
-        return f'''
-                  <h1>valor de zhn: {zabbix_host_name}</h1>
-                  <h1>valor de ip: {host_ip}</h1>
-                  <h1>valor de porta: {host_port}</h1>
-                  <h1>valor de usuario: {host_user}</h1>
-                  <h1>valor de senha: {host_pass}</h1>'''
-
-    # o método NÃO É POST, então vou tratar com este outro html
-    return '''
-<form method="POST">
-    <div><label>Zabbix IP: <input type="text" name="zabbix_ip" required></label></div>
-    <div><label>HostName: <input type="text" name="zabbix_host_name" required></label></div>
-    <div><label>IP: <input type="text" name="host_ip" required></label></div>
-    <div><label>PORTA: <input type="text" name="host_port" required></label></div>
-    <div><label>USUÁRIO: <input type="text" name="host_user" required></label></div>
-    <div><label>SENHA: <input type="text" name="host_pass" required></label></div>
-    <input type="submit" value="Submit">
-</form>'''
-
-def post():
-    return 
-
-
-def just_a_test():
-    # request.args['arg'] = obrigatório, se não existir, retornará 400 Bad Request
-    # request.args.get['arg'] = opcional, se não existir, retornará None
-    primeiro = request.args.get('primeiro')
-    segundo = request.args.get('segundo')
-    terceiro = request.args.get('terceiro') 
-    return '''<h1>primeiro:{}</h1>
-<h1>segundo:{}</h1>
-<h1>terceiro:{}</h1>'''.format(primeiro, segundo, terceiro)
+            # conexao bem sucedida
+            return f'''<h1>Conexão bem sucedida!</h1>
+<h3>Zabbix Server IP: {zabbix_server_ip}</h3>
+<h3>Zabbix Hostname: {zabbix_hostname}</h3>
+<h3>Host IP: {host_ip}</h3>
+<h3>Host Port: {host_port}</h3>
+<h3>Host User: {host_user}</h3>
+<h3>Host Pass: {host_pass}</h3>'''
+        
+    elif request.method =='GET':
+        return render_template('start_menu.html')
+    else:
+        redirectTo("/erro")
 
 if __name__ == "__main__":
     app.run()

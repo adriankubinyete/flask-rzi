@@ -43,14 +43,13 @@ def redirectTo(path, *args, **kwargs):
         msg=kwargs['mensagem']
     except KeyError:
         pass # Não importa se passar a mensagem ou não.
-    finally:
-        print("deu certo")
     
-    print(f"args: {args}")
-    print(f"kwargs: {kwargs}")
+    # debug para consultar se o redirectTo está recebendo os argumentos
+    #print(f"args: {args}") 
+    #print(f"kwargs: {kwargs}")
     return f'<script>window.location.assign("{path}")</script>'
 
-def sshcommit(comando):
+def sshcommit(client, comando):
     print(f'> "{comando}"...')
     stdin, stdout, stderr = client.exec_command(comando, get_pty=True)
     resultpmk = stdout.read().decode('utf-8')
@@ -95,8 +94,8 @@ def mytest():
         host_ip = request.form['host_ip']
         host_port = 22 if request.form['host_port'] == '' else request.form['host_port']
         host_user = request.form['host_user']
-        host_pass = request.form['host_pass']
-        host_key = request.form['host_key']
+        host_pass = 'noPass' if request.form['host_pass'] == '' else request.form['host_pass']
+        host_key = 'noKey' if request.form['host_key'] == '' else request.form['host_key']
         test1(zabbix_server_ip, "z-ip")
         test1(zabbix_hostname, "hostname")
         test1(host_ip, "h-ip")
@@ -119,6 +118,49 @@ def mytest():
             print(e)
             return redirectTo("/erro", _type="ssh", _erro=e)
         else:
+            print('\n-- DESCENDO FIREWALL --')
+            print('nada')
+            # Parando o firewall para a instalação
+            # sshcommit('sudo iptables -F')
+
+            print('\n-- INSTALAÇÃO --')
+            # Instalando as dependências
+            sshcommit(client, 'sudo rpm -Uvh https://repo.zabbix.com/zabbix/5.0/rhel/7/x86_64/zabbix-agent-5.0.22-1.el7.x86_64.rpm')
+            # Instalando o ZABBIX-AGENT
+            
+            
+            sshcommit(client, 'sudo yum -y install zabbix-agent')
+            # Iniciando o ZABBIX-AGENT
+            sshcommit(client, 'sudo systemctl start zabbix-agent')
+
+            print('\n-- EDITANDO ZABBIX_AGENTD.CONF --')
+            # SERVIDOR
+            sshcommit(client, "sudo sed -i 's/Server=127.0.0.1/Server={}/g' /etc/zabbix/zabbix_agentd.conf".format(zabbix_server_ip))
+            # SERVIDOR ATIVO
+            sshcommit(client, "sudo sed -i 's/ServerActive=127.0.0.1/ServerActive={}/g' /etc/zabbix/zabbix_agentd.conf".format(zabbix_server_ip))
+            # HOSTNAME
+            sshcommit(client, "sudo sed -i 's/Hostname=Zabbix server/Hostname={}/g' /etc/zabbix/zabbix_agentd.conf".format(zabbix_hostname))
+            # HOSTMETADATAITEM (utilizando sed por problemas de permissão AWS)
+            sshcommit(client, "sudo sed -i 's,# HostMetadataItem=,HostMetadataItem=release,g' /etc/zabbix/zabbix_agentd.conf")
+            # USERPARAMETER (utilizando sed por problemas de permissão AWS)
+            sshcommit(client, "sudo sed -i 's@# UserParameter=@UserParameter=release,cat /etc/redhat-release@g' /etc/zabbix/zabbix_agentd.conf")
+
+            print('\n-- FINALIZANDO INSTALAÇÃO --')
+            # Adicionando ZABBIX à lista de sudoers
+            sshcommit(client, 'echo "%zabbix ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers')
+            # Reiniciando o agent
+            sshcommit(client, 'sudo systemctl restart zabbix-agent')
+            # Permitindo que o ZA inicie no boot
+            sshcommit(client, 'sudo systemctl enable zabbix-agent')
+
+            print('\n-- SUBINDO FIREWALL --')
+            print('nada')
+            # Reativando o Firewall
+            # sshcommit('sudo bash /etc/firewall.sh')
+
+            # Finalizando as sessões abertas no usuário remoto
+            print('\n-- FINALIZANDO SESSÃO PARAMIKO --')
+            client.close()
             # conexao bem sucedida
             return f'''<h1>Conexão bem sucedida!</h1>
 <h3>Zabbix Server IP: {zabbix_server_ip}</h3>

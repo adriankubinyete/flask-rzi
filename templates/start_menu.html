@@ -81,9 +81,9 @@
         flex: 2;
     }
 </style>
-<form method="POST" action="/">
+<form method="POST" action="/zbx">
     <label>Zabbix/IP (server)
-        <input type="text" name="zabbix_ip" required />
+        <input type="text" name="zabbix_ip" required autofocus />
     </label>
     <label>
         Zabbix/Hostname <input type="text" name="zabbix_host_name" required />
@@ -97,20 +97,23 @@
     <label>Host/Usuário
         <input type="text" name="host_user" required />
     </label>
-    <label class="input_senha">Host/Senha <input type="text" name="host_pass" required /></label>
-    <label class="input_chave"> Host/Chave <input type="text" name="host_key" required /></label>
+    <label class="input_senha">Host/Senha <input class="field_input_senha" type="text" name="host_pass" /></label>
+    <label class="input_chave">Host/Chave <input class="field_input_chave" type="text" name="host_key" /></label>
 
     <div class="container-btn">
-        <input type="button" class="btn_senha" value="Auth por senha" />
-        <input type="button" class="btn_chave" value="Auth por chave" />
+        <input type="button" class="btn_senha" value="Auth por Senha" />
+        <input type="button" class="btn_chave" value="Auth por Chave" />
 
-        <input type="submit" class="btn_instalar"value="Instalar" autofocus disabled />
+        <input type="submit" class="btn_instalar"value="Instalar" disabled />
     </div>
 </form>
 
 <script>
     const input_senha = document.querySelector(".input_senha")
     const input_chave = document.querySelector(".input_chave")
+
+    const field_input_senha = document.querySelector(".field_input_senha")
+    const field_input_chave = document.querySelector(".field_input_chave")
 
     const btn_senha = document.querySelector(".btn_senha")
     const btn_chave = document.querySelector(".btn_chave")
@@ -121,18 +124,17 @@
 
         input_chave.classList.add("hide")
         input_chave.classList.remove("show")
-        input_senha.classList.toggle("show")
-        input_chave.value=""    
+        input_senha.classList.toggle("show")   
         
         btn_senha.classList.toggle("true123")
         if(btn_senha.classList.contains("true123")){
             btn_instalar.removeAttribute("disabled")
-            btn_chave.setAttribute("disabled", true)
-            btn_chave.removeAttribute("required")
+            btn_chave.setAttribute("disabled","")
+            field_input_senha.setAttribute("required","")
         }else{
-            btn_instalar.setAttribute("disabled",true)
+            btn_instalar.setAttribute("disabled","")
             btn_chave.removeAttribute("disabled")
-            btn_chave.setAttribute()
+            field_input_senha.removeAttribute("required")
         }
         
     })
@@ -142,16 +144,16 @@
         input_senha.classList.add("hide")
         input_senha.classList.remove("show")
         input_chave.classList.toggle("show")
-        btn_instalar.removeAttribute("disabled")
-        input_senha.value=""
 
         btn_chave.classList.toggle("true123")
         if(btn_chave.classList.contains("true123")){
             btn_instalar.removeAttribute("disabled")
-            btn_senha.setAttribute("disabled", true)
+            btn_senha.setAttribute("disabled","")
+            field_input_chave.setAttribute("required","")
         }else{
-            btn_instalar.setAttribute("disabled",true)
+            btn_instalar.setAttribute("disabled","")
             btn_senha.removeAttribute("disabled")
+            field_input_chave.removeAttribute("required")
         }
 
     })

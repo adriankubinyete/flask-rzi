@@ -81,24 +81,24 @@
         flex: 2;
     }
 </style>
-<form method="POST" action="/zbx">
-    <label>Zabbix/IP (server)
+<form class="form_base teste" method="POST" action="/zabbix">
+    <label class="input_zabbix_ip">Zabbix/IP (server)
         <input type="text" name="zabbix_ip" required autofocus />
     </label>
-    <label>
-        Zabbix/Hostname <input type="text" name="zabbix_host_name" required />
+    <label class="input_zabbix_hostname">Zabbix/Hostname
+        <input type="text" name="zabbix_host_name" required />
     </label>
-    <label>Host/IP
+    <label class="input_host_ip">Host/IP
         <input type="text" name="host_ip" required />
     </label>
-    <label>Host/Porta (default 22)
+    <label class="input_host_porta">Host/Porta (default 22)
         <input type="text" name="host_port" />
     </label>
-    <label>Host/Usuário
+    <label class="input_host_usuario">Host/Usuário
         <input type="text" name="host_user" required />
     </label>
     <label class="input_senha">Host/Senha <input class="field_input_senha" type="text" name="host_pass" /></label>
-    <label class="input_chave">Host/Chave <input class="field_input_chave" type="text" name="host_key" /></label>
+    <label class="input_chave">Host/Chave <input class="field_input_chave" type="file" name="host_key" /></label>
 
     <div class="container-btn">
         <input type="button" class="btn_senha" value="Auth por Senha" />
@@ -109,52 +109,70 @@
 </form>
 
 <script>
-    const input_senha = document.querySelector(".input_senha")
-    const input_chave = document.querySelector(".input_chave")
 
-    const field_input_senha = document.querySelector(".field_input_senha")
-    const field_input_chave = document.querySelector(".field_input_chave")
+    let form = document.querySelector(".teste")
 
-    const btn_senha = document.querySelector(".btn_senha")
-    const btn_chave = document.querySelector(".btn_chave")
+    let label_zabbix_ip = document.querySelector(".input_zabbix_ip")
+    let label_zabbix_hostname = document.querySelector(".input_zabbix_hostname")
+    let label_host_ip = document.querySelector(".input_host_ip")
+    let label_host_porta = document.querySelector(".input_host_porta")
+    let label_host_usuario = document.querySelector(".input_host_usuario")
+
+    let label_senha = document.querySelector(".input_senha")
+    let input_senha = document.querySelector(".field_input_senha")
+
+    let label_chave = document.querySelector(".input_chave")
+    let input_chave = document.querySelector(".field_input_chave")
+  
+    let ctn_buttons = document.querySelector(".container-btn")
+
+    let btn_senha = document.querySelector(".btn_senha")
+    let btn_chave = document.querySelector(".btn_chave")
     let btn_instalar = document.querySelector(".btn_instalar")
+
+    let formulario = document.querySelector(".form_base")
 
     btn_senha.addEventListener("click", (e) => {
         e.preventDefault()
 
-        input_chave.classList.add("hide")
-        input_chave.classList.remove("show")
-        input_senha.classList.toggle("show")   
+        label_chave.classList.add("hide")
+        label_chave.classList.remove("show")
+        label_senha.classList.toggle("show")   
         
         btn_senha.classList.toggle("true123")
         if(btn_senha.classList.contains("true123")){
             btn_instalar.removeAttribute("disabled")
             btn_chave.setAttribute("disabled","")
-            field_input_senha.setAttribute("required","")
+            input_senha.setAttribute("required","")
         }else{
             btn_instalar.setAttribute("disabled","")
             btn_chave.removeAttribute("disabled")
-            field_input_senha.removeAttribute("required")
+            input_senha.removeAttribute("required")
         }
         
     })
 
     btn_chave.addEventListener("click", (e) => {
         e.preventDefault()
-        input_senha.classList.add("hide")
-        input_senha.classList.remove("show")
-        input_chave.classList.toggle("show")
+        label_senha.classList.add("hide")
+        label_senha.classList.remove("show")
+        label_chave.classList.toggle("show")
 
         btn_chave.classList.toggle("true123")
         if(btn_chave.classList.contains("true123")){
             btn_instalar.removeAttribute("disabled")
             btn_senha.setAttribute("disabled","")
-            field_input_chave.setAttribute("required","")
+            input_chave.setAttribute("required","")
         }else{
             btn_instalar.setAttribute("disabled","")
             btn_senha.removeAttribute("disabled")
-            field_input_chave.removeAttribute("required")
+            input_chave.removeAttribute("required")
         }
 
     })
+
+    form.addEventListener("submit", () => {
+        form.classList.add("hide")
+    })
+
 </script>
